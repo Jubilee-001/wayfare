@@ -87,6 +87,35 @@ func (f *fakeStore) Recent(_ context.Context, corridor string, n int) ([]*runsto
 	return out, nil
 }
 
+// RecentBefore returns up to n records strictly before sequence number
+// 'before' (i.e. Seq < before), newest first. When before <= 0, it
+// returns up to n most recent records without cursor filtering.
+func (f *fakeStore) RecentBefore(_ context.Context, corridor string, n int, before int64) ([]*runstore.Record, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if f.recentErr != nil {
+		return nil, f.recentErr
+	}
+	if n <= 0 {
+		return nil, nil
+	}
+	recs := f.records[corridor]
+	filtered := make([]*runstore.Record, 0, len(recs))
+	for _, rec := range recs {
+		if before <= 0 || rec.Seq < before {
+			filtered = append(filtered, rec)
+		}
+	}
+	if len(filtered) > n {
+		filtered = filtered[len(filtered)-n:]
+	}
+	out := make([]*runstore.Record, 0, len(filtered))
+	for i := len(filtered) - 1; i >= 0; i-- {
+		out = append(out, filtered[i])
+	}
+	return out, nil
+}
+
 // All returns the corridor's history, oldest first.
 func (f *fakeStore) All(_ context.Context, corridor string) ([]*runstore.Record, error) {
 	f.mu.Lock()
