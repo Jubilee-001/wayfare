@@ -6,8 +6,8 @@ package route
 //
 // Hand-rolled rather than a library: the repo carries no third-party test
 // dependencies (CONTRIBUTING), so this file uses only the standard library
-// and shopspring/decimal. Generation is deterministic — a fixed seed per
-// run, printed on every failure — so any counterexample shown here is
+// and shopspring/decimal. Generation is deterministic â€” a fixed seed per
+// run, printed on every failure â€” so any counterexample shown here is
 // reproducible with `go test ./route -run TestPropsScore -seed=<printed>`.
 //
 // Tolerances: decimal division in this repo runs at the default
@@ -63,7 +63,7 @@ func TestPropsScoreRateAndLoss(t *testing.T) {
 			t.Fatalf("seed %d case %d: positive send and mid must produce a verdict, got UNKNOWN (send %s mid %s)",
 				propSeed, i, send, mid)
 		}
-		// Effective rate round-trips: send * rate ≈ receive.
+		// Effective rate round-trips: send * rate â‰ˆ receive.
 		if r := relErr(send.Mul(q.EffectiveRate), receive); r.GreaterThan(tol1e12) {
 			t.Fatalf("seed %d case %d: send*EffectiveRate off by %s (send %s receive %s rate %s)",
 				propSeed, i, r, send, receive, q.EffectiveRate)
@@ -75,7 +75,7 @@ func TestPropsScoreRateAndLoss(t *testing.T) {
 		if q.LossAmount.IsNegative() {
 			t.Fatalf("seed %d case %d: negative LossAmount %s", propSeed, i, q.LossAmount)
 		}
-		// Zero loss exactly when the route pays at least mid — modulo the
+		// Zero loss exactly when the route pays at least mid â€” modulo the
 		// 16-digit division rounding, which cannot represent a shortfall
 		// below ~1e-15 relative and rounds it to a zero loss.
 		beatsMid := !q.EffectiveRate.LessThan(mid)
@@ -90,7 +90,7 @@ func TestPropsScoreRateAndLoss(t *testing.T) {
 			}
 		}
 		// The loss percentage describes the same shortfall as the amounts:
-		// (1 - LossPct/100) * mid ≈ EffectiveRate.
+		// (1 - LossPct/100) * mid â‰ˆ EffectiveRate.
 		implied := decimal.NewFromInt(100).Sub(q.LossPct).Div(decimal.NewFromInt(100)).Mul(mid)
 		want := q.EffectiveRate
 		if beatsMid {
@@ -103,7 +103,7 @@ func TestPropsScoreRateAndLoss(t *testing.T) {
 			t.Fatalf("seed %d case %d: LossPct and EffectiveRate disagree by %s (loss %s eff %s mid %s)",
 				propSeed, i, r, q.LossPct, q.EffectiveRate, mid)
 		}
-		// LossAmount says the same thing in money: ≈ send*mid − receive,
+		// LossAmount says the same thing in money: â‰ˆ send*mid âˆ’ receive,
 		// clamped at zero.
 		wantAmt := send.Mul(mid).Sub(receive)
 		if wantAmt.IsNegative() {
@@ -121,7 +121,7 @@ func TestPropsVerdictThresholdsAndMonotonicity(t *testing.T) {
 	for i := 0; i < 400; i++ {
 		cases = append(cases, randPositive(rng))
 	}
-	// Land exactly on each boundary too — thresholds are inclusive there.
+	// Land exactly on each boundary too â€” thresholds are inclusive there.
 	for _, b := range []string{"3", "8", "20"} {
 		v, err := decimal.NewFromString(b)
 		if err != nil {
@@ -175,7 +175,7 @@ func TestPropsVerdictThresholdsAndMonotonicity(t *testing.T) {
 		a := monoCases[i]
 		b := monoCases[i+1]
 		if verdictFor(a) > verdictFor(b) {
-			t.Fatalf("seed %d: monotonicity violated at adjacent pair (%s→%s gives %v→%v)",
+			t.Fatalf("seed %d: monotonicity violated at adjacent pair (%sâ†’%s gives %vâ†’%v)",
 				propSeed, a, b, verdictFor(a), verdictFor(b))
 		}
 	}
@@ -184,7 +184,7 @@ func TestPropsVerdictThresholdsAndMonotonicity(t *testing.T) {
 		a := randPositive(rng)
 		b := a.Add(randPositive(rng).Abs()) // b > a
 		if verdictFor(a) > verdictFor(b) {
-			t.Fatalf("seed %d case %d: verdict got better with more loss (%s→%s gives %v→%v)",
+			t.Fatalf("seed %d case %d: verdict got better with more loss (%sâ†’%s gives %vâ†’%v)",
 				propSeed, i, a, b, verdictFor(a), verdictFor(b))
 		}
 	}
